@@ -1,9 +1,11 @@
-import collections
 import copy
+import math
 from typing import *
 
 dy = [-1, 1, -2, 2, -1, 1, -2, 2]
 dx = [-2, -2, -1, -1, 2, 2, 1, 1]
+
+infinity = math.inf
 
 
 class Game:
@@ -44,10 +46,14 @@ class Node:
         self.point: int = point
         self.turn: int = turn  # 현재 말의 턴을 저장합니다. 0: max, 1: min
 
+    def utility(self):
+        return self.point
+
 
 class ChessGame(Game):
     def __init__(self):
         self.initial = Node()
+
     def actions(self, state) -> List[Tuple[int, int]]:
         result = []
 
@@ -75,52 +81,59 @@ class ChessGame(Game):
     def utility(self, state: Node, player: int):
         return state.point
 
-    def alpha_beta(self, state: Node):
-        ans = int(-1e9)
-        size = state.size
 
-        for i in range(size):
-            for j in range(size):
-                state.y, state.x = i, j
-                ans = max(ans, self.max_value(state, int(-1e9), int(1e9)))
+def alphabeta_search(game, state):
+    """알파-베타 가지치기를 사용하여 최고의 수를 결정하기 위한 게임 트리 탐색."""
 
-    def max_value(self, state: Node, alpha: int, beta: int):
-        if self.is_terminal(state):
-            return self.utility(state, state.turn), None
+    player = state.to_move
 
-        value = int(-1e9)
-        move: Tuple[int, int] = (0, 0)
+    def max_value(state, alpha, beta):
+        if game.is_terminal(state):
+            return game.utility(state, player), None
+        v, move = -infinity, None
+        for a in game.actions(state):
+            v2, _ = min_value(game.result(state, a), alpha, beta)
+            if v2 > v:
+                v, move = v2, a
+                alpha = max(alpha, v)
+            if v >= beta:
+                return v, move
+        return v, move
 
-        for action in self.actions(state):
-            value2, _ = self.min_value(self.result(state, action), alpha, beta)
+    def min_value(state, alpha, beta):
+        if game.is_terminal(state):
+            return game.utility(state, player), None
+        v, move = +infinity, None
+        for a in game.actions(state):
+            v2, _ = max_value(game.result(state, a), alpha, beta)
+            if v2 < v:
+                v, move = v2, a
+                beta = min(beta, v)
+            if v <= alpha:
+                return v, move
+        return v, move
 
-            if value < value2:
-                value, move = value2, action
-                alpha = max(alpha, value)
+    return max_value(state, -infinity, +infinity)
 
-            if value >= beta:
-                return value, move
 
-        return value, move
+def play_game(game, strategies: dict, verbose=False) -> Node:
+    """번갈아 가면서 두는 게임 진행.
+    strategies: {참가자 이름: 함수} 형태의 딕셔너리.
+    함수(game, state)는 상태 state에서 참가자의 수를 찾는 함수"""
+    state = game.initial
+    while not game.is_terminal(state):
+        player = state.to_move
+        move = strategies[player](game, state)
+        state = game.result(state, move)
+        if verbose:
+            print('Player', player, 'move:', move)
+            print(state)
+    return state
 
-    def min_value(self, state: Node, alpha: int, beta: int):
-        if self.is_terminal(state):
-            return self.utility(state, state.turn), None
 
-        value = int(1e9)
-        move: Tuple[int, int] = (0, 0)
-
-        for action in self.actions(state):
-            value2, _ = self.max_value(self.result(state, action), alpha, beta)
-
-            if value2 < value:
-                value, move = value2, action
-                beta = min(beta, value)
-
-            if value <= alpha:
-                return value, move
-
-        return value, move
+def game_player(search_algorithm):
+    """지정된 탐색 알고리즘을 사용하는 플레이어: (game, state)를 입력 받아 move를 리턴하는 함수."""
+    return lambda game, state: search_algorithm(game, state)[1]
 
 
 if __name__ == '__main__':
@@ -129,4 +142,5 @@ if __name__ == '__main__':
     print("n * n 체스판에 넣을 점수를 입력해주세요")
     board: List[List[int]] = [list(map(int, input(f"{i}번째 줄: "))) for i in range(n)]
 
-    print(f"플레이어 A와 B의 최대 점수차이는 {play_game(ChessGame()).utility()}점 입니다.")
+    print(
+        f"플레이어 A와 B의 최대 점수차이는 {play_game(ChessGame(), {'a': game_player(alphabeta_search), 'b': game_player(alphabeta_search)}).utility()}점 입니다.")
