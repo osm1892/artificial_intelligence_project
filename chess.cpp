@@ -3,37 +3,51 @@
 
 using namespace std;
 
-typedef pair<int, int> ip;
-typedef pair<int, ip> iip;
+typedef pair<int, int> ii;
+typedef pair<int, ii> iii;
 
+// 상태공간에 기반한 게임 클래스입니다.
 class Game;
 
+// 상태공간에서의 각 상태를 나타내는 노드 클래스입니다.
 class Node;
 
+// 하나의 나이트를 가지고 땅따먹기를 하는 체스게임의 축소 문제입니다.
 class ChessGame;
 
+// 알파-베타 탐색을 수행하는 함수입니다.
 int AlphaBetaSearch(Game *game, Node *state);
 
-iip MaxValue(Game *game, Node *state, int alpha, int beta);
+// 알파-베타 탐색의 MaxValue 부분입니다.
+iii MaxValue(Game *game, Node *state, int alpha, int beta);
 
-iip MinValue(Game *game, Node *state, int alpha, int beta);;
+// 알파-베타 탐색의 MinValue 부분입니다.
+iii MinValue(Game *game, Node *state, int alpha, int beta);
+
+// 나이트의 다음 이동 경로를 저장하는 변수입니다.
 const int dy[8] = {-2, -2, -1, -1, 2, 2, 1, 1};
 const int dx[8] = {-1, 1, -2, 2, -1, 1, -2, 2};
 
 class Game
 {
 public:
-	virtual Node *getInitial() = 0;
+	virtual void getInitial(Node *out) = 0;
 
-	virtual vector<ip> actions(Node *state) = 0;
+	// 주어진 상태에서 허용 가능한 수 리스트를 반환
+	virtual void actions(Node *state, vector<ii> *result) = 0;
 
-	virtual Node result(Node *state, ip *move, int turn) = 0;
+	// 주어진 상태에서 수를 두었을 때의 결과 상태 반환
+	virtual void result(Node *state, ii *move, int turn, Node *result) = 0;
 
+	// 종료 상태 여부를 반환
 	bool isTerminal(Node *state)
 	{
-		return actions(state).empty();
+		vector<ii> action_list;
+		actions(state, &action_list);
+		return action_list.empty();
 	}
 
+	// 종료 상태에서 게임이 종료되었을 때의 효용값 반환
 	virtual int utility(Node *state) = 0;
 };
 
@@ -51,7 +65,7 @@ public:
 		this->size = size;
 		this->y = y;
 		this->x = x;
-		this->board = *board;
+		this->board.assign(board->begin(), board->end());
 		this->point = 0;
 	}
 
@@ -60,15 +74,39 @@ public:
 		size = node->size;
 		y = node->y;
 		x = node->x;
-		board = node->board;
+		board.assign(node->board.begin(), node->board.end());
 		point = node->point;
 	}
 
+	Node(Node const &node) : size(node.size), y(node.y), x(node.x), point(node.point)
+	{
+		board.assign(node.board.begin(), node.board.end());
+	}
+
+	Node()
+	{
+		size = 0;
+		y = 0;
+		x = 0;
+		point = 0;
+	}
+
+	void init(Node *node)
+	{
+		size = node->size;
+		y = node->y;
+		x = node->x;
+		board.assign(node->board.begin(), node->board.end());
+		point = node->point;
+	}
+
+	// 현 상태의 효용값 반환
 	int utility() const
 	{
 		return point;
 	}
 
+	// 주어진 좌표에 말을 놓을 수 있는지 체크
 	bool isValidPos(int y, int x)
 	{
 		if (y < 0 || size <= y)
@@ -97,15 +135,21 @@ public:
 
 	}
 
-	Node *getInitial()
+	explicit ChessGame(ChessGame *other) : initial(&(other->initial))
 	{
-		return &initial;
+
 	}
 
-	vector<ip> actions(Node *state)
+	void getInitial(Node *out)
 	{
-		vector<ip> result;
+		out = &initial;
+	}
 
+	void actions(Node *state, vector<ii> *result)
+	{
+		result->clear();
+
+		// 8개의 이동 경로를 순회하면서 가능한 이동 경로를 저장합니다.
 		for (int i = 0; i < 8; i++)
 		{
 			int ny = state->y + dy[i];
@@ -116,18 +160,17 @@ public:
 				continue;
 			}
 
-			result.push_back(make_pair(ny, nx));
+			result->push_back(make_pair(ny, nx));
 		}
-
-		return result;
 	}
 
-	Node result(Node *state, ip *move, int turn)
+	void result(Node *state, ii *move, int turn, Node *result)
 	{
-		Node nextState = *state;
+		Node nextState(state);
 		int y = move->first;
 		int x = move->second;
 
+		// turn이 0인 경우 Max, 1인 경우 Min을 의미합니다.
 		if (turn == 0)
 		{
 			nextState.point += nextState.board[y][x];
@@ -136,7 +179,9 @@ public:
 			nextState.point -= nextState.board[y][x];
 		}
 		nextState.board[y][x] = -1;
-		return nextState;
+
+		// 새로운 상태를 result 변수에 복사합니다.
+		result->init(&nextState);
 	}
 
 	int utility(Node *state)
@@ -150,10 +195,14 @@ int AlphaBetaSearch(Game *game, Node *state)
 	int ans = -1e9;
 	int size = state->size;
 
+	// 게임판을 순회하면서, 나이트를 처음에 어떤 곳에 놓아야 최대로 점수차이가 날지 계산합니다.
 	for (int i = 0; i < size; i++)
 	{
 		for (int j = 0; j < size; j++)
 		{
+			if (i == 3 and j == 1) {
+				cout << 'a';
+			}
 			state->y = i;
 			state->x = j;
 			ans = max(ans, MaxValue(game, state, -1e9, 1e9).first);
@@ -163,21 +212,23 @@ int AlphaBetaSearch(Game *game, Node *state)
 	return ans;
 }
 
-iip MaxValue(Game *game, Node *state, int alpha, int beta)
+iii MaxValue(Game *game, Node *state, int alpha, int beta)
 {
 	if (game->isTerminal(state))
 	{
-		return make_pair(game->utility(state), ip());
+		return make_pair(game->utility(state), ii());
 	}
 
 	int v = -1e9;
-	ip move = ip();
+	ii move = ii();
 
-	vector<ip> actions = game->actions(state);
+	vector<ii> actions;
+	game->actions(state, &actions);
 
 	for (int i = 0; i < actions.size(); i++)
 	{
-		Node result = game->result(state, &actions[i], 0);
+		Node result;
+		game->result(state, &actions[i], 0, &result);
 		int v2 = MinValue(game, &result, alpha, beta).first;
 
 		if (v2 > v)
@@ -196,21 +247,23 @@ iip MaxValue(Game *game, Node *state, int alpha, int beta)
 	return make_pair(v, move);
 }
 
-iip MinValue(Game *game, Node *state, int alpha, int beta)
+iii MinValue(Game *game, Node *state, int alpha, int beta)
 {
 	if (game->isTerminal(state))
 	{
-		return make_pair(game->utility(state), ip());
+		return make_pair(game->utility(state), ii());
 	}
 
 	int v = 1e9;
-	ip move = ip();
+	ii move = ii();
 
-	vector<ip> actions = game->actions(state);
+	vector<ii> actions;
+	game->actions(state, &actions);
 
 	for (int i = 0; i < actions.size(); i++)
 	{
-		Node result = game->result(state, &actions[i], 1);
+		Node result;
+		game->result(state, &actions[i], 1, &result);
 		int v2 = MaxValue(game, &result, alpha, beta).first;
 
 		if (v2 < v)
