@@ -26,8 +26,8 @@ iii MaxValue(Game *game, Node *state, int alpha, int beta);
 iii MinValue(Game *game, Node *state, int alpha, int beta);
 
 // 나이트의 다음 이동 경로를 저장하는 변수입니다.
-const int dy[8] = {-2, -2, -1, -1, 2, 2, 1, 1};
-const int dx[8] = {-1, 1, -2, 2, -1, 1, -2, 2};
+const int dy[8] = {-2, -1, 1, 2, 2, 1, -1, -2};
+const int dx[8] = {1, 2, 2, 1, -1, -2, -2, -1};
 
 class Game
 {
