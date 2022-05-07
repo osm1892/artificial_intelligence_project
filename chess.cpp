@@ -192,24 +192,8 @@ public:
 
 int AlphaBetaSearch(Game *game, Node *state)
 {
-	int ans = -1e9;
-	int size = state->size;
-
-	// 게임판을 순회하면서, 나이트를 처음에 어떤 곳에 놓아야 최대로 점수차이가 날지 계산합니다.
-	for (int i = 0; i < size; i++)
-	{
-		for (int j = 0; j < size; j++)
-		{
-			if (i == 3 and j == 1) {
-				cout << 'a';
-			}
-			state->y = i;
-			state->x = j;
-			ans = max(ans, MaxValue(game, state, -1e9, 1e9).first);
-		}
-	}
-
-	return ans;
+	// Max가 게임을 시작하는 것으로 알파-베타 탐색을 시작합니다.
+	return MaxValue(game, state, -1e9, 1e9).first;
 }
 
 iii MaxValue(Game *game, Node *state, int alpha, int beta)
@@ -304,7 +288,7 @@ int main()
 		}
 	}
 
-	ChessGame game(size, -1, -1, &board);
+	ChessGame game(size, 0, 0, &board);
 
 	int ans = AlphaBetaSearch(&game, &game.initial);
 
