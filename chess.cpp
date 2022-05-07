@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -270,27 +271,33 @@ int main()
 {
 	int size = 0;
 
-	cout << "체스판의 크기를 입력해주세요: ";
+	ifstream input("input.txt");
 
-	cin >> size;
-	cin.ignore();
+	if (input.fail())
+	{
+		cout << "input.txt 파일을 읽을 수 없습니다." << endl;
+		return 0;
+	}
+
+	input >> size;
 
 	vector<vector<int> > board(size, vector<int>(size));
-
-	cout << "체스판에 넣을 점수를 입력해주세요" << endl;
 
 	for (int i = 0; i < size; i++)
 	{
 		for (int j = 0; j < size; j++)
 		{
-			cin >> board[i][j];
-			cin.ignore();
+			input >> board[i][j];
 		}
 	}
+
+	input.close();
 
 	ChessGame game(size, 0, 0, &board);
 
 	int ans = AlphaBetaSearch(&game, &game.initial);
 
 	cout << "플레이어 A와 B의 최대 점수차이는 " << ans << " 입니다." << endl;
+
+	return 0;
 }
