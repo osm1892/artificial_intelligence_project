@@ -170,6 +170,9 @@ public:
 		Node nextState(state);
 		int y = move->first;
 		int x = move->second;
+		
+		nextState.y = y;
+		nextState.x = x;
 
 		// turn이 0인 경우 Max, 1인 경우 Min을 의미합니다.
 		if (turn == 0)
