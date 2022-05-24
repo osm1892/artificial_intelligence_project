@@ -55,7 +55,7 @@ class FolKB(KB):
             raise Exception(f'Not a definite clause: {sentence}')
 
     def ask_generator(self, query):
-        return fol_bc_ask(self, query)
+        return fol_fc_ask(self, query)
 
     def retract(self, sentence):
         self.clauses.remove(sentence)
@@ -334,8 +334,8 @@ def main():
         liar_kb.tell(expr(f'F({i})'))
 
         print(f"{i}가 거짓말쟁이일 경우")
-        liar_result = [list(i.values())[0] for i in fol_fc_ask(liar_kb, expr('F(x)'))]
-        truth_result = [list(i.values())[0] for i in fol_fc_ask(liar_kb, expr('T(x)'))]
+        liar_result = [list(i.values())[0] for i in liar_kb.ask_generator(expr('F(x)'))]
+        truth_result = [list(i.values())[0] for i in liar_kb.ask_generator(expr('T(x)'))]
 
         print("거짓말쟁이 목록:", liar_result)
         print("진실쟁이 목록:", truth_result)
