@@ -42,7 +42,7 @@ class FolKB(KB):
     """
 
     def __init__(self, clauses=None):
-        super().__init__()
+        super().__init__(sentence=None)
         self.clauses = []
         if clauses:
             for clause in clauses:
@@ -280,10 +280,55 @@ def standardize_variables(sentence, dic=None):
 standardize_variables.counter = itertools.count()
 
 
+def problem_maker(people: int, liar: int, max_state: int):
+    pass
+
+
 def main():
+    # 참고: https://m.blog.naver.com/dylan0301/221562384708
     print("거짓말쟁이 찾기 게임")
 
-    clauses = []
+    # 해당 문제는 위 블로그의 내용을 빌려왔습니다.
+    """
+    A, B, C, D 중 한명은 거짓말쟁이다.
+    
+    A: B 또는 C는 거짓말쟁이다.
+    B: B는 거짓말쟁이가 아니다.
+    C: A는 거짓말쟁이다.
+    D: A 또는 B는 거짓말쟁이다.
+    """
+
+    # 문장을 저장하는 배열입니다.
+    # 주어진 문장으로부터 일차논리 한정 절을 생성하였습니다.
+    # 각각의 화자가 말하는 문장이 옳다면 화자가 T(True) 라는 절을 생성하였고,
+    # 각각의 화자가 T(True)라면 문장의 내용이 옳다는 것이므로, 화자 ==> 문장 내용에 대한 절을 생성하였습니다.
+    alpha_clauses = [
+        expr('F(B) & T(C) ==> T(A)'),
+        expr('F(C) & T(B) ==> T(A)'),
+        expr('F(A) ==> T(C)'),
+        expr('F(A) & T(B) ==> T(D)'),
+        expr('F(B) & T(A) ==> T(D)'),
+        expr('T(A) & T(B) ==> F(C)'),
+        expr('T(A) & T(C) ==> F(B)'),
+        expr('T(C) ==> F(A)'),
+        expr('T(D) & T(A) ==> F(B)'),
+        expr('T(D) & T(B) ==> F(A)'),
+    ]
+
+    # 한 명이 거짓말쟁이라면 나머지는 모두 진실을 말하는 것이므로,
+    # 이에 대한 절을 추가합니다.
+    for i in ['A', 'B', 'C', 'D']:
+        for j in ['A', 'B', 'C', 'D']:
+            if i == j:
+                continue
+            alpha_clauses.append(expr(f'F({i}) ==> T({j})'))
+
+    liar_kb = FolKB(clauses=alpha_clauses)
+
+    liar_kb.tell(expr('F(A)'))
+
+    print(list(fol_fc_ask(liar_kb, expr('F(x)'))))
+    print(list(fol_fc_ask(liar_kb, expr('T(x)'))))
 
 
 if __name__ == "__main__":
