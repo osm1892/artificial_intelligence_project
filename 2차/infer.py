@@ -286,7 +286,7 @@ def problem_maker(people: int, liar: int, max_state: int):
 
 def main():
     # 참고: https://m.blog.naver.com/dylan0301/221562384708
-    print("거짓말쟁이 찾기 게임")
+    print("거짓말쟁이 찾기 게임\n")
 
     # 해당 문제는 위 블로그의 내용을 빌려왔습니다.
     """
@@ -323,12 +323,36 @@ def main():
                 continue
             alpha_clauses.append(expr(f'F({i}) ==> T({j})'))
 
-    liar_kb = FolKB(clauses=alpha_clauses)
+    # 문제의 답을 저장하는 배열입니다.
+    # 답이 1개가 맞는지 검증하기 위함입니다.
+    answers = []
 
-    liar_kb.tell(expr('F(A)'))
+    # 고전적인 방법으로, 각각의 화자를 거짓말쟁이로 가정한 후, 추론을 수행합니다.
+    # 거짓말쟁이 1명에, 나머지가 다 진실을 말하는 것으로 나온다면 그것이 정답입니다.
+    for i in ['A', 'B', 'C', 'D']:
+        liar_kb = FolKB(clauses=alpha_clauses)
+        liar_kb.tell(expr(f'F({i})'))
 
-    print(list(fol_fc_ask(liar_kb, expr('F(x)'))))
-    print(list(fol_fc_ask(liar_kb, expr('T(x)'))))
+        print(f"{i}가 거짓말쟁이일 경우")
+        liar_result = [list(i.values())[0] for i in fol_fc_ask(liar_kb, expr('F(x)'))]
+        truth_result = [list(i.values())[0] for i in fol_fc_ask(liar_kb, expr('T(x)'))]
+
+        print("거짓말쟁이 목록:", liar_result)
+        print("진실쟁이 목록:", truth_result)
+        print('\n')
+
+        i_symbol = expr(i)
+        if len(liar_result) != 1:  # 거짓말쟁이가 0명 혹은 2명 이상이 나온다면 오답입니다.
+            continue
+        if i_symbol not in liar_result:  # 선택한 화자가 거짓말쟁이가 아닌 것으로 바뀌었다면 오답입니다.
+            continue
+        if i_symbol in truth_result:  # 선택한 화자가 진실을 말하는 것으로 판명되었다면 오답입니다.
+            continue
+        if set(liar_result) & set(truth_result):  # 거짓말쟁이와 진실쟁이가 겹칠 경우에도 오답입니다.
+            continue
+        answers.append(i_symbol)  # 정답 목록에 추가합니다.
+
+    print("최종 답:", answers)
 
 
 if __name__ == "__main__":
