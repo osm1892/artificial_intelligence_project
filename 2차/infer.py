@@ -288,40 +288,13 @@ def main():
     # 참고: https://m.blog.naver.com/dylan0301/221562384708
     print("거짓말쟁이 찾기 게임\n")
 
-    # 해당 문제는 위 블로그의 내용을 빌려왔습니다.
-    """
-    A, B, C, D 중 한명은 거짓말쟁이다.
-    
-    A: B 또는 C는 거짓말쟁이다.
-    B: B는 거짓말쟁이가 아니다.
-    C: A는 거짓말쟁이다.
-    D: A 또는 B는 거짓말쟁이다.
-    """
-
     # 문장을 저장하는 배열입니다.
-    # 주어진 문장으로부터 일차논리 한정 절을 생성하였습니다.
-    # 각각의 화자가 말하는 문장이 옳다면 화자가 T(True) 라는 절을 생성하였고,
-    # 각각의 화자가 T(True)라면 문장의 내용이 옳다는 것이므로, 화자 ==> 문장 내용에 대한 절을 생성하였습니다.
     alpha_clauses = [
-        expr('F(B) & T(C) ==> T(A)'),
-        expr('F(C) & T(B) ==> T(A)'),
-        expr('F(A) ==> T(C)'),
-        expr('F(A) & T(B) ==> T(D)'),
-        expr('F(B) & T(A) ==> T(D)'),
-        expr('T(A) & T(B) ==> F(C)'),
-        expr('T(A) & T(C) ==> F(B)'),
-        expr('T(C) ==> F(A)'),
-        expr('T(D) & T(A) ==> F(B)'),
-        expr('T(D) & T(B) ==> F(A)'),
+        expr('T(A) ==> T(A)'),  # A: A는 참을 말하고 있다.
+        expr('T(B) & T(C) ==> T(D)'),  # D: B와 C는 참을 말하고 있다.
+        expr('F(A) ==> T(B)'),  # B: A는 거짓을 말하고 있다.
+        expr('F(A) & T(B) ==> T(C)'),  # C: A와 B는 거짓을 말하고 있다.
     ]
-
-    # 한 명이 거짓말쟁이라면 나머지는 모두 진실을 말하는 것이므로,
-    # 이에 대한 절을 추가합니다.
-    for i in ['A', 'B', 'C', 'D']:
-        for j in ['A', 'B', 'C', 'D']:
-            if i == j:
-                continue
-            alpha_clauses.append(expr(f'F({i}) ==> T({j})'))
 
     # 문제의 답을 저장하는 배열입니다.
     # 답이 1개가 맞는지 검증하기 위함입니다.
@@ -343,6 +316,8 @@ def main():
 
         i_symbol = expr(i)
         if len(liar_result) != 1:  # 거짓말쟁이가 0명 혹은 2명 이상이 나온다면 오답입니다.
+            continue
+        if len(truth_result) != 3:  # 진실쟁이가 3명이 아니라면 오답입니다.
             continue
         if i_symbol not in liar_result:  # 선택한 화자가 거짓말쟁이가 아닌 것으로 바뀌었다면 오답입니다.
             continue
