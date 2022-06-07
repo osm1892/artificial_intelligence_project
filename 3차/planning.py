@@ -1,5 +1,5 @@
 # 고전적 계획수립 문제 정의하기. 코드는 GitHub aima-python의 코드를 기반으로 일부 수정한 것임.
-from inference import *
+from infer import *
 
 
 # 계획수립 문제 정의
