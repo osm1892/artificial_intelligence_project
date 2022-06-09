@@ -458,5 +458,13 @@ class AngelicNode(Node):
         self.action_pes = action_pes
 
 def main():
+    library = {
+        'HLA': ['Make(Pasta)', 'Boil(Water)', 'Boil(Noodle)', 'Prepare(TomatoSauce)', 'Prepare(Ingredients)', 'Make(Sauce)', 'Mix(Noodle, Sauce)'],
+        'steps': [['Boil(Noodle)', 'Make(Sauce)', 'Mix(Noodle, Sauce)'], []],
+        'precond': [],
+        'effect': [],
+    }
+
     boil_water = HLA('Boil(Water)', precond='Clean(Pot) & Empty(Pot)', effect='~Empty(Pot) & In(Pot, Water) & Hot(Pot)')
     boil_noodle = HLA('Boil(Noodle)', precond='Boil(Water) & Clean(Pot)', effect='~Clean(Pot) & In(Pot, Noodle)')
+    clean_pot = HLA('Clean(Pot)', precond='', effect='Clean(Pot) & Empty(Pot) & ~Hot(Pot)')
