@@ -456,3 +456,7 @@ class AngelicNode(Node):
     def __init__(self, state, parent=None, action_opt=None, action_pes=None, path_cost=0):
         super().__init__(state, parent, action_opt, path_cost)
         self.action_pes = action_pes
+
+def main():
+    boil_water = HLA('Boil(Water)', precond='Clean(Pot) & Empty(Pot)', effect='~Empty(Pot) & In(Pot, Water) & Hot(Pot)')
+    boil_noodle = HLA('Boil(Noodle)', precond='Boil(Water) & Clean(Pot)', effect='~Clean(Pot) & In(Pot, Noodle)')
