@@ -1,4 +1,5 @@
 # 고전적 계획수립 관련 코드가 planning.py에 저장되어 있음
+import copy
 from collections import deque
 
 from planning import *
@@ -467,14 +468,79 @@ class AngelicNode(Node):
         super().__init__(state, parent, action_opt, path_cost)
         self.action_pes = action_pes
 
-def main():
+
+def bfs(problem: PlanningProblem):
+    queue: collections.deque[PlanningProblem] = collections.deque()
+
+    queue.append(copy.deepcopy(problem))
+
+    while queue:
+        cur = queue.popleft()
+
+        if cur.goal_test():
+            print("true")
+
+        for action in cur.actions:
+            cur_next = copy.deepcopy(cur)
+            cur_next.act(action.action)
+            queue.append(cur_next)
+
+
+def hla_example_deprecated():
     library = {
-        'HLA': ['Make(Pasta)', 'Boil(Water)', 'Boil(Noodle)', 'Prepare(TomatoSauce)', 'Prepare(Ingredients)', 'Make(Sauce)', 'Mix(Noodle, Sauce)'],
-        'steps': [['Boil(Noodle)', 'Make(Sauce)', 'Mix(Noodle, Sauce)'], []],
-        'precond': [],
-        'effect': [],
+        'HLA': [
+            'Make(Pasta)',
+            'Boil(Noodle)',
+            'Make(Sauce)',
+            'Set(Pan)',
+            'Pour(Pan, Water)',
+            'Boil(Water)',
+            'Heat(Pan)',
+        ],
+        'steps': [
+            ['Boil(Noodle)', 'Make(Sauce)'],
+            [],
+            [],
+            [],
+        ],
+        'precond': [
+            [],
+            ['Have(Noodle)', 'Clean(Pan)'],
+            ['Clean(Pan)', 'Have(Onion)', 'Have(Tomato)', 'Have(Ketchup)'],
+            ['~Clean(Pan)'],
+        ],
+        'effect': [
+            ['Have(Pasta)'],
+            ['Cooked(Noodle)'],
+            ['Have(Sauce)', '~Clean(Pan)'],
+            ['Clean(Pan)'],
+        ],
     }
 
-    boil_water = HLA('Boil(Water)', precond='Clean(Pot) & Empty(Pot)', effect='~Empty(Pot) & In(Pot, Water) & Hot(Pot)')
-    boil_noodle = HLA('Boil(Noodle)', precond='Boil(Water) & Clean(Pot)', effect='~Clean(Pot) & In(Pot, Noodle)')
-    clean_pot = HLA('Clean(Pot)', precond='', effect='Clean(Pot) & Empty(Pot) & ~Hot(Pot)')
+    make_pasta = HLA(
+        action='Make(Pasta)',
+        precond='Cooked(Noodle) & Have(Sauce)',
+        effect='Have(Pasta)'
+    )
+    boil_noodle = HLA(
+        action='Boil(Noodle)',
+        precond='Have(Noodle) & Clean(Pan)',
+        effect='Cooked(Noodle)'
+    )
+    make_sauce = HLA(
+        action='Make(Sauce)',
+        precond='Clean(Pan) & Have(Onion) & Have(Tomato) & Have(Ketchup)',
+        effect='Have(Sauce) & ~Clean(Pan)'
+    )
+    set_pan = HLA(
+        action='Set(Pan)',
+        precond='~Clean(Pan)',
+        effect='Clean(Pan)'
+    )
+
+
+def main():
+
+
+if __name__ == '__main__':
+    main()

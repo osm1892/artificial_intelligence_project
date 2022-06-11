@@ -90,8 +90,8 @@ class Node:
         return self.path_cost < other.path_cost
 
 
-failure = Node('failure', path_cost=math.inf.__int__())  # 알고리즘이 해결책을 찾을 수 없음을 나타냄
-cutoff = Node('cutoff', path_cost=math.inf.__int__())  # 반복적 깊이 증가 탐색이 중단(cut off)됐음을 나타냄
+failure = Node('failure', path_cost=math.inf)  # 알고리즘이 해결책을 찾을 수 없음을 나타냄
+cutoff = Node('cutoff', path_cost=math.inf)  # 반복적 깊이 증가 탐색이 중단(cut off)됐음을 나타냄
 
 
 def expand(problem, node):
