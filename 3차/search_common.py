@@ -17,7 +17,10 @@ class Problem:
     def __init__(self, initial=None, goal=None, **kwds):
         """초기 상태(initial), 목표 상태(goal) 지정.
         필요에 따라 다른 파라미터들 추가"""
-        self.__dict__.update(initial=initial, goal=goal, **kwds)  # __dict__: 객체의 속성 정보를 담고 있는 딕셔너리
+        self.initial = initial
+        self.goal = goal
+
+        self.__dict__.update(**kwds)  # __dict__: 객체의 속성 정보를 담고 있는 딕셔너리
 
     def actions(self, state):
         """행동: 주어진 상태(state)에서 취할 수 있는 행동들을 리턴함.
@@ -39,13 +42,15 @@ class Problem:
         else:
             return state == self.goal
 
-    def action_cost(self, state1, action, state2):
+    @staticmethod
+    def action_cost(state1, action, state2):
         """행동 비용: state1에서 action을 통해 state2에 이르는 비용을 리턴함.
         경로가 중요치 않은 문제의 경우에는 state2만을 고려한 함수가 될 것임.
         현재 구현된 기본 버전은 모든 상태에서 행동 비용을 1로 산정함."""
         return 1
 
-    def h(self, node):
+    @staticmethod
+    def h(node):
         """휴리스틱 함수:
         문제에 따라 휴리스틱 함수를 적절히 변경해줘야 함."""
         return 0
@@ -70,7 +75,10 @@ class Node:
 
     def __init__(self, state, parent=None, action=None, path_cost=0):
         """parent에서 action을 취해 만들어지는 탐색 트리의 노드 생성"""
-        self.__dict__.update(state=state, parent=parent, action=action, path_cost=path_cost)
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.path_cost = path_cost
 
     def __repr__(self):
         return f"<{self.state}>"
@@ -82,8 +90,8 @@ class Node:
         return self.path_cost < other.path_cost
 
 
-failure = Node('failure', path_cost=math.inf)  # 알고리즘이 해결책을 찾을 수 없음을 나타냄
-cutoff = Node('cutoff', path_cost=math.inf)  # 반복적 깊이 증가 탐색이 중단(cut off)됐음을 나타냄
+failure = Node('failure', path_cost=math.inf.__int__())  # 알고리즘이 해결책을 찾을 수 없음을 나타냄
+cutoff = Node('cutoff', path_cost=math.inf.__int__())  # 반복적 깊이 증가 탐색이 중단(cut off)됐음을 나타냄
 
 
 def expand(problem, node):

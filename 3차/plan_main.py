@@ -170,6 +170,7 @@ class RealWorldPlanningProblem(PlanningProblem):
                 for sequence in RealWorldPlanningProblem.refinements(hla, hierarchy):
                     frontier.append(Node(outcome.initial, plan, prefix + sequence + suffix))
 
+    @staticmethod
     def result(state, actions):
         """문제에 행동을 적용했을 때의 결과"""
         for a in actions:
@@ -219,6 +220,7 @@ class RealWorldPlanningProblem(PlanningProblem):
                 for y in reachable_set[x]
                 if all(goal in y for goal in self.goals)]
 
+    @staticmethod
     def is_primitive(plan, library):
         """
         plan이 기본(primitive) 계획인지 확인.
@@ -232,6 +234,7 @@ class RealWorldPlanningProblem(PlanningProblem):
                     return False
         return True
 
+    @staticmethod
     def reach_opt(init, plan):
         """
         plan의 행동 시퀀스에 대해 낙관적 도달 가능 집합을 찾음.
@@ -240,6 +243,7 @@ class RealWorldPlanningProblem(PlanningProblem):
         optimistic_description = plan.action  # list of angelic actions with optimistic description
         return RealWorldPlanningProblem.find_reachable_set(reachable_set, optimistic_description)
 
+    @staticmethod
     def reach_pes(init, plan):
         """
         plan의 행동 시퀀스에 대해 비관적 도달 가능 집합을 찾음.
@@ -248,6 +252,7 @@ class RealWorldPlanningProblem(PlanningProblem):
         pessimistic_description = plan.action_pes  # list of angelic actions with pessimistic description
         return RealWorldPlanningProblem.find_reachable_set(reachable_set, pessimistic_description)
 
+    @staticmethod
     def find_reachable_set(reachable_set, action_description):
         """
         도달 가능 집합의 각 상태에 행동 표현 action_description을 적용했을 때 도달 가능한 상태를 찾음.
@@ -268,6 +273,7 @@ class RealWorldPlanningProblem(PlanningProblem):
                             reachable_set[i + 1].append(state)
         return reachable_set
 
+    @staticmethod
     def find_hla(plan, hierarchy):
         """
         plan.action에서 기본 행동이 아닌 첫번째 HLA와 그 인덱스를 찾음.
@@ -281,6 +287,7 @@ class RealWorldPlanningProblem(PlanningProblem):
                 break
         return hla, index
 
+    @staticmethod
     def making_progress(plan, initial_plan):
         """
         refinement regression이 무한 루프에 빠지지 않도록 방지함.
@@ -290,6 +297,7 @@ class RealWorldPlanningProblem(PlanningProblem):
                 return False
         return True
 
+    @staticmethod
     def decompose(hierarchy, plan, s_f, reachable_set):
         solution = []
         i = max(reachable_set.keys())
@@ -310,6 +318,7 @@ class RealWorldPlanningProblem(PlanningProblem):
             i -= 1
         return solution
 
+    @staticmethod
     def find_previous_state(s_f, reachable_set, i, action):
         """
         regression(역행).
@@ -420,6 +429,7 @@ class AngelicHLA(HLA):
 
         return [HLA(Expr(self.name, self.args), self.precond, effects[i]) for i in range(len(effects))]
 
+    @staticmethod
     def compute_parameters(clause):
         """
         n = angelic HLA에 상응하는 HLA 결과의 수
