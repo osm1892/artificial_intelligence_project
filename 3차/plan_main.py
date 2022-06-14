@@ -262,7 +262,7 @@ def make_spaghetti():
                                     Action(action='MakeSauce(tool, item1, item2, item3, sauce)',
                                            precond='Clean(tool) & Have(item1) & Have(item2) & Have(item3)',
                                            effect='Have(sauce) & ~Clean(tool)'),
-                                    Action(action='MakeNoodle(noodle)', precond='Have(noodle)', effect='Boil(noodle)'),
+                                    Action(action='MakeNoodle(noodle)', precond='Have(noodle) & Clean(tool)', effect='Boil(noodle)'),
                                     Action(action='MakePasta(sauce, noodle, pasta)',
                                            precond='Have(sauce) & Boil(noodle)',
                                            effect='Have(pasta)')])
